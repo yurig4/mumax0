@@ -1,5 +1,7 @@
 # MUMAX0 — Interface Web Didática para MuMax3
 
+🔗 **Versão Online (GitHub Pages):** https://yurig4.github.io/mumax0/
+
 **MUMAX0** é uma aplicação web leve (zero dependências externas) criada para facilitar a montagem estruturada de scripts `.mx3`, a validação física/numérica da malha micromagnética e a visualização elucidativa de resultados (`.ovf` e `table.txt`) do simulador [**MuMax3**](https://mumax.github.io/).
 
 > *"O objetivo não é decorar comandos, mas entender a estrutura da preparação do script."*
