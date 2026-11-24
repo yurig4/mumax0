@@ -57,7 +57,11 @@
         🔧 <span data-i18n="btn_config_mumax">Configurar MuMax3</span>
       </button>
 
-      <span id="badge-server" class="pill pill-muted" title="Inicie via Abrir_MUMAX0.bat para executar localmente">⚪ Estático</span>
+      <span id="badge-server" class="pill pill-info pill-clickable" title="Clique para ver como usar a versão completa com GPU local">🌐 Modo Web</span>
+
+      <a id="link-github-top" class="btn btn-secondary btn-gh" href="https://github.com/yurig4/mumax0" target="_blank" rel="noopener noreferrer" title="Abrir código-fonte e versão local no GitHub">
+        🐙 <span data-i18n="btn_github">GitHub</span>
+      </a>
 
       <div class="lang-box">
         <label for="sel-lang" data-i18n="lbl_lang">🌐 Idioma:</label>
@@ -982,10 +986,21 @@
         <button class="modal-close" id="btn-close-config" type="button">✕</button>
       </div>
       <div class="modal-body">
-        <div id="cfg-offline-banner" class="callout-warn hidden" data-i18n="cfg_offline_msg">
-          ⚠️ <strong>Modo estático detectado:</strong> para executar o <code>mumax3.exe</code> direto pelo navegador, abra o app clicando em <code>Abrir_MUMAX0.bat</code>.
+        <div id="cfg-offline-banner" class="callout-web hidden">
+          <div id="cfg-offline-text" data-i18n="cfg_offline_msg">
+            🌐 <strong>Modo Web ativo:</strong> no navegador você pode montar scripts <code>.mx3</code> e visualizar arquivos <code>.ovf</code> e <code>table.txt</code>. Para <strong>executar o MuMax3 na sua GPU local</strong>, baixe a versão completa no GitHub e abra via <code>Abrir_MUMAX0.bat</code> (Windows) ou <code>./abrir_mumax0.sh</code> (Linux/macOS).
+          </div>
+          <div class="callout-web-actions">
+            <a class="btn btn-accent btn-xs" href="https://github.com/yurig4/mumax0" target="_blank" rel="noopener noreferrer">
+              🐙 <span data-i18n="btn_open_github">Abrir Versão Completa no GitHub</span>
+            </a>
+            <a class="btn btn-secondary btn-xs" href="https://github.com/yurig4/mumax0/archive/refs/heads/main.zip" target="_blank" rel="noopener noreferrer">
+              ⬇️ <span data-i18n="btn_download_zip">Baixar Versão Local (.zip)</span>
+            </a>
+          </div>
         </div>
 
+        <fieldset id="cfg-local-fieldset" class="cfg-fieldset">
         <div class="modal-field">
           <label for="cfg-mumax-path" data-i18n="cfg_exe">Caminho do executável (mumax3.exe):</label>
           <input type="text" id="cfg-mumax-path" placeholder="C:\...\bin\mumax3.exe" />
@@ -1013,6 +1028,7 @@
             </label>
           </div>
         </div>
+        </fieldset>
       </div>
       <div class="modal-footer">
         <button id="btn-open-workdir" class="btn btn-secondary" type="button">📂 <span data-i18n="btn_open_folder">Abrir Pasta</span></button>

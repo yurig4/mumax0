@@ -1418,6 +1418,7 @@
       }
       $("btn-save-config").disabled = !bridge.online;
       $("btn-open-workdir").disabled = !bridge.online;
+      if ($("cfg-local-fieldset")) $("cfg-local-fieldset").disabled = !bridge.online;
       $("modal-config").classList.remove("hidden");
     }
 
@@ -1630,6 +1631,12 @@
       await fetchServerStatus();
       openConfigModal();
     });
+    if ($("badge-server")) {
+      $("badge-server").addEventListener("click", async () => {
+        await fetchServerStatus();
+        openConfigModal();
+      });
+    }
     $("btn-close-config").addEventListener("click", closeConfigModal);
     $("btn-cancel-config").addEventListener("click", closeConfigModal);
     $("btn-save-config").addEventListener("click", saveConfigFromModal);

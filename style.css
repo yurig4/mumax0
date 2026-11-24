@@ -1076,6 +1076,57 @@ textarea#extra-code {
   margin-bottom: 12px;
 }
 
+.callout-web {
+  background: var(--accent-soft);
+  border: 1px solid #c7d2fe;
+  border-left: 4px solid var(--accent);
+  color: #1e1b4b;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  line-height: 1.48;
+  margin-bottom: 14px;
+}
+
+.callout-web code {
+  background: rgba(255, 255, 255, 0.78);
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-family: Consolas, monospace;
+  font-size: 11.5px;
+}
+
+.callout-web-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.callout-web-actions a,
+.btn-gh {
+  text-decoration: none;
+}
+
+.pill-clickable {
+  cursor: pointer;
+}
+
+.pill-clickable:hover {
+  filter: brightness(0.95);
+}
+
+.cfg-fieldset {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+.cfg-fieldset:disabled {
+  opacity: 0.55;
+}
+
 .console-title-group {
   display: flex;
   align-items: center;
