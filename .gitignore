@@ -1,0 +1,13 @@
+# Configurações locais do usuário (caminhos de executável e pasta de saída)
+mumax0_settings.json
+
+# Saídas e simulações locais
+simulacoes/
+*.out/
+*.ovf
+*.mx3
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+desktop.ini

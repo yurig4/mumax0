@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MUMAX0 — Construtor Didático de Scripts .mx3</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- TOP TOOLBAR (Estilo QUIX2O / app_orca0) -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="brand">
+        <span class="brand-badge">μ</span>
+        <div>
+          <h1 id="ui-app-title">MUMAX0</h1>
+          <p id="ui-app-subtitle">Interface Didática para Montagem de Scripts .mx3</p>
+        </div>
+      </div>
+
+      <nav class="main-tabs" role="tablist" aria-label="Abas principais">
+        <button id="btn-tab-generator" class="main-tab active" type="button" data-main-tab="generator">
+          ⚙️ <span data-i18n="main_tab_gen">Gerador .mx3</span>
+        </button>
+        <button id="btn-tab-viewer" class="main-tab" type="button" data-main-tab="viewer">
+          📊 <span data-i18n="main_tab_view">Visualização (.ovf / .txt)</span>
+        </button>
+      </nav>
+    </div>
+
+    <div class="topbar-controls">
+      <div class="mode-switch" role="group" aria-label="Nível de complexidade">
+        <button id="btn-mode-basic" class="mode-btn active" type="button" data-mode="basic">
+          🧩 <span data-i18n="mode_basic">Básico</span>
+        </button>
+        <button id="btn-mode-adv" class="mode-btn" type="button" data-mode="advanced">
+          🔬 <span data-i18n="mode_adv">Avançado</span>
+        </button>
+      </div>
+
+      <div class="toolbar-divider"></div>
+
+      <button id="btn-import-json" class="btn btn-secondary" type="button" title="Carregar configuração (.json)">
+        📂 <span data-i18n="btn_load_cfg">Carregar Config</span>
+      </button>
+      <input id="file-import-json" type="file" accept=".json" hidden />
+
+      <button id="btn-export-json" class="btn btn-secondary" type="button" title="Salvar configuração (.json)">
+        💼 <span data-i18n="btn_save_cfg">Salvar Config</span>
+      </button>
+
+      <button id="btn-reset" class="btn btn-secondary" type="button" title="Restaurar valores iniciais">
+        🧹 <span data-i18n="btn_reset">Limpar</span>
+      </button>
+
+      <button id="btn-config-mumax" class="btn btn-secondary" type="button" title="Configurar executável mumax3.exe e GPU">
+        🔧 <span data-i18n="btn_config_mumax">Configurar MuMax3</span>
+      </button>
+
+      <span id="badge-server" class="pill pill-muted" title="Inicie via Abrir_MUMAX0.bat para executar localmente">⚪ Estático</span>
+
+      <div class="lang-box">
+        <label for="sel-lang" data-i18n="lbl_lang">🌐 Idioma:</label>
+        <select id="sel-lang">
+          <option value="pt">🇧🇷 Português</option>
+          <option value="en">🇺🇸 English</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <!-- ABA 1: WORKSPACE PRINCIPAL (2 Colunas / 4 Quadrantes no estilo app_orca0) -->
+  <main id="tab-generator" class="workspace">
+    <!-- COLUNA ESQUERDA: Visualização da Amostra + Diagnóstico Físico/Numérico -->
+    <section class="col-left">
+      <!-- QUADRANTE 1: Visualização 2D da Geometria, Malha e Magnetização Inicial -->
+      <div class="card card-canvas">
+        <div class="card-header">
+          <h2 data-i18n="q1_title">1. Visualização da Amostra e Estado Inicial (m₀)</h2>
+          <span id="badge-dims" class="pill pill-info">256 × 128 × 5 nm³</span>
+        </div>
+
+        <div class="canvas-wrap">
+          <canvas id="sample-canvas" width="520" height="340"></canvas>
+          <div class="canvas-legend" id="canvas-legend">
+            <span class="legend-item"><span class="swatch swatch-pos"></span> +m<sub>z</sub></span>
+            <span class="legend-item"><span class="swatch swatch-plane"></span> plano xy</span>
+            <span class="legend-item"><span class="swatch swatch-neg"></span> −m<sub>z</sub></span>
+            <span class="legend-item"><span class="swatch swatch-bext"></span> B<sub>ext</sub></span>
+          </div>
+        </div>
+
+        <div class="canvas-controls">
+          <label class="chk-inline">
+            <input type="checkbox" id="vis-grid" checked />
+            <span data-i18n="vis_grid">Mostrar malha</span>
+          </label>
+          <label class="chk-inline">
+            <input type="checkbox" id="vis-vectors" checked />
+            <span data-i18n="vis_vectors">Mostrar vetores m</span>
+          </label>
+          <label class="chk-inline">
+            <input type="checkbox" id="vis-color" checked />
+            <span data-i18n="vis_color">Mapa de cores HSL</span>
+          </label>
+          <label class="chk-inline">
+            <input type="checkbox" id="vis-bext" checked />
+            <span data-i18n="vis_bext">Mostrar B<sub>ext</sub></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- QUADRANTE 2: Escalas Características, Energia Livre e Validação Numérica -->
+      <div class="card card-diagnostics">
+        <div class="card-header">
+          <h2 data-i18n="q2_title">2. Escalas Físicas &amp; Validação Numérica</h2>
+          <span id="badge-health" class="pill pill-ok">✔ Válido</span>
+        </div>
+
+        <!-- Equação dinâmica da Energia Livre -->
+        <div class="energy-banner" id="energy-banner">
+          <span class="energy-lhs">E(<b>m</b>) =</span>
+          <span class="energy-term active" id="term-ex">E<sub>ex</sub></span>
+          <span class="energy-op">+</span>
+          <span class="energy-term active" id="term-d">E<sub>d</sub></span>
+          <span class="energy-op">+</span>
+          <span class="energy-term inactive" id="term-anis">E<sub>anis</sub></span>
+          <span class="energy-op">+</span>
+          <span class="energy-term inactive" id="term-z">E<sub>Z</sub></span>
+          <span class="energy-op">+</span>
+          <span class="energy-term inactive" id="term-dmi">E<sub>DMI</sub></span>
+        </div>
+
+        <!-- Métricas calculadas em tempo real -->
+        <div class="metrics-grid">
+          <div class="metric-box" data-help="lex">
+            <span class="metric-label" data-i18n="met_lex">Comp. de troca (l<sub>ex</sub>)</span>
+            <strong id="val-lex" class="metric-value">—</strong>
+          </div>
+          <div class="metric-box" data-help="wall_width">
+            <span class="metric-label" data-i18n="met_delta">Largura parede (Δ)</span>
+            <strong id="val-delta" class="metric-value">—</strong>
+          </div>
+          <div class="metric-box" data-help="quality_q">
+            <span class="metric-label" data-i18n="met_q">Fator qualidade (Q)</span>
+            <strong id="val-q" class="metric-value">—</strong>
+          </div>
+          <div class="metric-box" data-help="grid_size">
+            <span class="metric-label" data-i18n="met_cells">Total de células</span>
+            <strong id="val-cells" class="metric-value">—</strong>
+          </div>
+        </div>
+
+        <!-- Lista de alertas e checagens numéricas -->
+        <div class="validation-list" id="validation-list"></div>
+      </div>
+    </section>
+
+    <!-- COLUNA DIREITA: Montagem + Guia Didático (Topo) & Preview .mx3 (Base) -->
+    <section class="col-right">
+      <!-- QUADRANTE 3: Formulário nos 5 Passos da Aula + Guia Didático em Tempo Real -->
+      <div class="card card-builder">
+        <div class="card-header">
+          <h2 data-i18n="q3_title">3. Montagem Estruturada do Script .mx3</h2>
+          <div class="step-tabs" id="step-tabs" role="tablist">
+            <button class="step-tab active" data-step="1" type="button">
+              <span class="step-num">1</span> <span data-i18n="tab_1">Malha &amp; Geometria</span>
+            </button>
+            <button class="step-tab" data-step="2" type="button">
+              <span class="step-num">2</span> <span data-i18n="tab_2">Material &amp; Energias</span>
+            </button>
+            <button class="step-tab" data-step="3" type="button">
+              <span class="step-num">3</span> <span data-i18n="tab_3">Estado Inicial</span>
+            </button>
+            <button class="step-tab" data-step="4" type="button">
+              <span class="step-num">4</span> <span data-i18n="tab_4">Etapas &amp; Dinâmica</span>
+            </button>
+            <button class="step-tab" data-step="5" type="button">
+              <span class="step-num">5</span> <span data-i18n="tab_5">Escrita &amp; Solver</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="builder-split">
+          <!-- SUB-COLUNA 1: FORMULÁRIO -->
+          <div class="form-pane">
+
+            <!-- PASSO 1: MALHA E GEOMETRIA -->
+            <div class="step-panel active" data-panel="1">
+              <div class="section-subtitle" data-i18n="sec_grid">Discretização da Malha</div>
+
+              <div class="form-row" data-help="grid_size">
+                <label data-i18n="lbl_grid_n">Células (N<sub>x</sub>, N<sub>y</sub>, N<sub>z</sub>):</label>
+                <div class="triple-input">
+                  <input type="number" id="nx" min="1" max="4096" step="1" value="128" />
+                  <input type="number" id="ny" min="1" max="4096" step="1" value="64" />
+                  <input type="number" id="nz" min="1" max="512" step="1" value="1" />
+                </div>
+              </div>
+
+              <div class="form-row" data-help="cell_mode">
+                <label data-i18n="lbl_cell_mode">Definir tamanho por:</label>
+                <select id="cell-mode">
+                  <option value="cell" data-i18n="opt_by_cell">Tamanho da célula (Δx, Δy, Δz em nm)</option>
+                  <option value="total" data-i18n="opt_by_total">Dimensão total da caixa (Lx, Ly, Lz em nm → L/N)</option>
+                </select>
+              </div>
+
+              <div class="form-row" id="row-cell-nm" data-help="cell_size">
+                <label data-i18n="lbl_cell_nm">Célula Δx, Δy, Δz (nm):</label>
+                <div class="triple-input">
+                  <input type="number" id="cx" min="0.1" step="0.5" value="2" />
+                  <input type="number" id="cy" min="0.1" step="0.5" value="2" />
+                  <input type="number" id="cz" min="0.1" step="0.5" value="5" />
+                </div>
+              </div>
+
+              <div class="form-row hidden" id="row-total-nm" data-help="cell_size">
+                <label data-i18n="lbl_total_nm">Amostra L<sub>x</sub>, L<sub>y</sub>, L<sub>z</sub> (nm):</label>
+                <div class="triple-input">
+                  <input type="number" id="lx" min="1" step="10" value="500" />
+                  <input type="number" id="ly" min="1" step="10" value="125" />
+                  <input type="number" id="lz" min="0.5" step="1" value="3" />
+                </div>
+              </div>
+
+              <div class="form-row adv-only" data-help="pbc">
+                <label data-i18n="lbl_pbc">PBC — Cond. Periódicas (p<sub>x</sub>, p<sub>y</sub>, p<sub>z</sub>):</label>
+                <div class="triple-input">
+                  <input type="number" id="pbcx" min="0" max="64" step="1" value="0" />
+                  <input type="number" id="pbcy" min="0" max="64" step="1" value="0" />
+                  <input type="number" id="pbcz" min="0" max="64" step="1" value="0" />
+                </div>
+              </div>
+
+              <hr class="sep" />
+              <div class="section-subtitle" data-i18n="sec_geom">Geometria da Amostra (SetGeom)</div>
+
+              <div class="form-row" data-help="geometry">
+                <label data-i18n="lbl_geom_type">Forma geométrica:</label>
+                <select id="geom-type">
+                  <option value="box" data-i18n="geom_box">Caixa retangular inteira (padrão)</option>
+                  <option value="circle" data-i18n="geom_circle">Disco / Cilindro — circle(d)</option>
+                  <option value="ellipse" data-i18n="geom_ellipse">Elipse — ellipse(a, b)</option>
+                  <option value="ring" data-i18n="geom_ring">Anel magnético — circle.sub(circle)</option>
+                  <option value="cuboid" data-i18n="geom_cuboid">Cuboide recortado — cuboid(x, y, z)</option>
+                  <option value="image" data-i18n="geom_image">Máscara de imagem — imageShape(...)</option>
+                </select>
+              </div>
+
+              <div class="form-row hidden" id="geom-circle-row" data-help="geometry">
+                <label data-i18n="lbl_diam">Diâmetro d (nm):</label>
+                <input type="number" id="geom-diam" min="1" step="10" value="240" />
+              </div>
+
+              <div class="form-row hidden" id="geom-ellipse-row" data-help="geometry">
+                <label data-i18n="lbl_axes">Eixos a, b (nm):</label>
+                <div class="double-input">
+                  <input type="number" id="geom-ea" min="1" step="10" value="240" />
+                  <input type="number" id="geom-eb" min="1" step="10" value="120" />
+                </div>
+              </div>
+
+              <div class="form-row hidden" id="geom-ring-row" data-help="geometry">
+                <label data-i18n="lbl_ring">Diâm. externo / interno (nm):</label>
+                <div class="double-input">
+                  <input type="number" id="geom-rout" min="2" step="10" value="240" />
+                  <input type="number" id="geom-rin" min="1" step="10" value="100" />
+                </div>
+              </div>
+
+              <div class="form-row hidden" id="geom-cuboid-row" data-help="geometry">
+                <label data-i18n="lbl_cuboid">Dimensões x, y, z (nm):</label>
+                <div class="triple-input">
+                  <input type="number" id="geom-cx" min="1" step="10" value="200" />
+                  <input type="number" id="geom-cy" min="1" step="10" value="100" />
+                  <input type="number" id="geom-cz" min="0.5" step="1" value="5" />
+                </div>
+              </div>
+
+              <div class="form-row hidden" id="geom-image-row" data-help="geometry">
+                <label data-i18n="lbl_img_file">Arquivo de máscara (.png):</label>
+                <input type="text" id="geom-img" value="mascara.png" />
+              </div>
+
+              <div class="form-row adv-only" data-help="edge_smooth">
+                <label data-i18n="lbl_edge_smooth">EdgeSmooth (suavização de borda):</label>
+                <input type="number" id="edge-smooth" min="0" max="8" step="1" value="0" />
+              </div>
+            </div>
+
+            <!-- PASSO 2: MATERIAL E ENERGIAS -->
+            <div class="step-panel" data-panel="2">
+              <div class="section-subtitle" data-i18n="sec_mat">Parâmetros Magnéticos Fundamentais</div>
+
+              <div class="form-row" data-help="msat">
+                <label>M<sub>sat</sub> (kA/m):</label>
+                <div class="input-unit">
+                  <input type="number" id="msat" min="0" step="10" value="800" />
+                  <span class="si-hint" id="hint-msat">= 800e3 A/m</span>
+                </div>
+              </div>
+
+              <div class="form-row" data-help="aex">
+                <label>A<sub>ex</sub> (pJ/m):</label>
+                <div class="input-unit">
+                  <input type="number" id="aex" min="0" step="0.5" value="13" />
+                  <span class="si-hint" id="hint-aex">= 13e-12 J/m</span>
+                </div>
+              </div>
+
+              <div class="form-row" data-help="alpha">
+                <label>α (Gilbert damping):</label>
+                <div class="input-unit">
+                  <input type="number" id="alpha" min="0.0001" max="5" step="0.01" value="0.02" />
+                  <span class="si-hint" data-i18n="unit_dimless">adimensional</span>
+                </div>
+              </div>
+
+              <div class="form-row" data-help="demag">
+                <label data-i18n="lbl_demag">Campo desmagnetizante:</label>
+                <label class="chk-inline">
+                  <input type="checkbox" id="enable-demag" checked />
+                  <span data-i18n="chk_demag">Ativar interação magnetostática (EnableDemag)</span>
+                </label>
+              </div>
+
+              <hr class="sep" />
+              <div class="section-subtitle" data-i18n="sec_anis">Anisotropia Magnética</div>
+
+              <div class="form-row" data-help="ku1">
+                <label>K<sub>u1</sub> uniaxial (kJ/m³):</label>
+                <div class="input-unit">
+                  <input type="number" id="ku1" step="10" value="0" />
+                  <span class="si-hint" id="hint-ku1">= 0 J/m³</span>
+                </div>
+              </div>
+
+              <div class="form-row" id="row-anisu" data-help="ku1">
+                <label>AnisU (eixo u<sub>x</sub>, u<sub>y</sub>, u<sub>z</sub>):</label>
+                <div class="triple-input">
+                  <input type="number" id="anisu-x" step="0.1" value="0" />
+                  <input type="number" id="anisu-y" step="0.1" value="0" />
+                  <input type="number" id="anisu-z" step="0.1" value="1" />
+                </div>
+              </div>
+
+              <div class="adv-only">
+                <div class="form-row" data-help="kc1">
+                  <label>K<sub>c1</sub> cúbica (kJ/m³):</label>
+                  <div class="input-unit">
+                    <input type="number" id="kc1" step="5" value="0" />
+                    <span class="si-hint" id="hint-kc1">= 0 J/m³</span>
+                  </div>
+                </div>
+
+                <hr class="sep" />
+                <div class="section-subtitle" data-i18n="sec_dmi_temp">Interação DMI &amp; Temperatura</div>
+
+                <div class="form-row" data-help="dmi">
+                  <label data-i18n="lbl_dmi_type">Tipo de DMI:</label>
+                  <select id="dmi-type">
+                    <option value="none" data-i18n="opt_none">Nenhuma</option>
+                    <option value="Dind" data-i18n="opt_dind">Interfacial (Dind — Néel)</option>
+                    <option value="Dbulk" data-i18n="opt_dbulk">Volumétrica (Dbulk — Bloch)</option>
+                  </select>
+                </div>
+
+                <div class="form-row hidden" id="row-dmi-val" data-help="dmi">
+                  <label>D (mJ/m²):</label>
+                  <div class="input-unit">
+                    <input type="number" id="dmi-val" step="0.1" value="3.0" />
+                    <span class="si-hint" id="hint-dmi">= 3e-3 J/m²</span>
+                  </div>
+                </div>
+
+                <div class="form-row" data-help="temp">
+                  <label data-i18n="lbl_temp">Temperatura T (K):</label>
+                  <div class="double-input">
+                    <input type="number" id="temp-k" min="0" step="10" value="0" />
+                    <input type="number" id="therm-seed" min="0" step="1" value="0" placeholder="ThermSeed (opc.)" title="ThermSeed (0 = aleatório)" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- PASSO 3: ESTADO INICIAL -->
+            <div class="step-panel" data-panel="3">
+              <div class="callout-info" data-i18n="callout_m0">
+                💡 <strong>Atenção:</strong> A configuração inicial <code>m</code> é apenas o ponto de partida — ela <strong>não</strong> é necessariamente o estado de equilíbrio do sistema!
+              </div>
+
+              <div class="form-row" data-help="init_m">
+                <label data-i18n="lbl_m0_type">Configuração inicial (m):</label>
+                <select id="m0-type">
+                  <option value="uniform" data-i18n="m0_uniform">Uniforme — uniform(mx, my, mz)</option>
+                  <option value="random" data-i18n="m0_random">Aleatória — randomMag()</option>
+                  <option value="vortex" data-i18n="m0_vortex">Vórtice — vortex(circ, pol)</option>
+                  <option value="twodomain" data-i18n="m0_twodomain">Dois domínios — twoDomain(...)</option>
+                  <option value="neel_sk" class="adv-opt" data-i18n="m0_neel_sk">Skyrmion de Néel — neelSkyrmion(q, p)</option>
+                  <option value="bloch_sk" class="adv-opt" data-i18n="m0_bloch_sk">Skyrmion de Bloch — blochSkyrmion(q, p)</option>
+                  <option value="loadfile" class="adv-opt" data-i18n="m0_loadfile">Carregar arquivo — m.LoadFile(...)</option>
+                </select>
+              </div>
+
+              <div class="form-row" id="m0-uniform-row" data-help="init_m">
+                <label data-i18n="lbl_m0_vec">Direção (m<sub>x</sub>, m<sub>y</sub>, m<sub>z</sub>):</label>
+                <div class="triple-input">
+                  <input type="number" id="m0-ux" step="0.1" value="1" />
+                  <input type="number" id="m0-uy" step="0.1" value="0.1" />
+                  <input type="number" id="m0-uz" step="0.1" value="0" />
+                </div>
+              </div>
+
+              <div class="form-row hidden" id="m0-random-row" data-help="init_m">
+                <label data-i18n="lbl_m0_seed">Semente (randomMagSeed):</label>
+                <input type="number" id="m0-seed" min="0" step="1" value="0" title="0 = sem semente fixa" />
+              </div>
+
+              <div class="form-row hidden" id="m0-vortex-row" data-help="init_m">
+                <label data-i18n="lbl_vortex">Circulação / Polaridade:</label>
+                <div class="double-input">
+                  <select id="m0-vcirc">
+                    <option value="1">+1 (Anti-horário)</option>
+                    <option value="-1">-1 (Horário)</option>
+                  </select>
+                  <select id="m0-vpol">
+                    <option value="1">+1 (Núcleo +z)</option>
+                    <option value="-1">-1 (Núcleo −z)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="hidden" id="m0-twodomain-box" data-help="init_m">
+                <div class="form-row">
+                  <label data-i18n="lbl_td1">Domínio 1 (mx, my, mz):</label>
+                  <div class="triple-input">
+                    <input type="number" id="td-1x" step="0.1" value="1" />
+                    <input type="number" id="td-1y" step="0.1" value="0" />
+                    <input type="number" id="td-1z" step="0.1" value="0" />
+                  </div>
+                </div>
+                <div class="form-row">
+                  <label data-i18n="lbl_tdw">Parede (mx, my, mz):</label>
+                  <div class="triple-input">
+                    <input type="number" id="td-wx" step="0.1" value="0" />
+                    <input type="number" id="td-wy" step="0.1" value="1" />
+                    <input type="number" id="td-wz" step="0.1" value="0" />
+                  </div>
+                </div>
+                <div class="form-row">
+                  <label data-i18n="lbl_td2">Domínio 2 (mx, my, mz):</label>
+                  <div class="triple-input">
+                    <input type="number" id="td-2x" step="0.1" value="-1" />
+                    <input type="number" id="td-2y" step="0.1" value="0" />
+                    <input type="number" id="td-2z" step="0.1" value="0" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-row hidden" id="m0-sk-row" data-help="init_m">
+                <label data-i18n="lbl_sk">Carga / Polaridade:</label>
+                <div class="double-input">
+                  <select id="m0-skq">
+                    <option value="1">+1 (Núcleo +z / fora −z)</option>
+                    <option value="-1">-1 (Núcleo −z / fora +z)</option>
+                  </select>
+                  <select id="m0-skp">
+                    <option value="1">+1</option>
+                    <option value="-1">-1</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-row hidden" id="m0-load-row" data-help="init_m">
+                <label data-i18n="lbl_load_ovf">Arquivo .ovf:</label>
+                <input type="text" id="m0-ovf-file" value="estado_inicial.ovf" />
+              </div>
+
+              <hr class="sep" />
+              <div class="section-subtitle" data-i18n="sec_save_init">Salvar Estado Inicial (antes da relaxação)</div>
+              <div class="checkbox-grid" data-help="outputs">
+                <label class="chk-inline">
+                  <input type="checkbox" id="save-init-ovf" />
+                  <span>SaveAs(m, "inicial")</span>
+                </label>
+                <label class="chk-inline">
+                  <input type="checkbox" id="snap-init-png" />
+                  <span>SnapshotAs(m, "inicial.png")</span>
+                </label>
+                <label class="chk-inline">
+                  <input type="checkbox" id="table-init-save" />
+                  <span>TableSave()</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- PASSO 4: ETAPAS E DINÂMICA -->
+            <div class="step-panel" data-panel="4">
+              <div class="section-subtitle" data-i18n="sec_stage1">Etapa 1 — Busca de Equilíbrio Estático</div>
+
+              <div class="form-row" data-help="operations">
+                <label data-i18n="lbl_eq_op">Operação de equilíbrio:</label>
+                <select id="eq-op">
+                  <option value="relax" data-i18n="op_relax">relax() — Relaxação robusta (LLG sem precessão)</option>
+                  <option value="minimize" data-i18n="op_minimize">minimize() — Gradiente conjugado (rápido)</option>
+                  <option value="both" data-i18n="op_both">relax() + minimize() — Relaxar e refinar</option>
+                  <option value="none" data-i18n="op_none">Nenhuma (ir direto à Etapa 2)</option>
+                </select>
+              </div>
+
+              <div class="form-row" id="row-eq-bext" data-help="bext">
+                <label data-i18n="lbl_eq_bext">Campo na Etapa 1 (mT):</label>
+                <div class="triple-input">
+                  <input type="number" id="eq-bx" step="1" value="0" />
+                  <input type="number" id="eq-by" step="1" value="0" />
+                  <input type="number" id="eq-bz" step="1" value="0" />
+                </div>
+              </div>
+
+              <div class="checkbox-grid" id="row-eq-saves" data-help="outputs">
+                <label class="chk-inline">
+                  <input type="checkbox" id="save-eq-ovf" checked />
+                  <span>SaveAs(m, "equilibrio")</span>
+                </label>
+                <label class="chk-inline">
+                  <input type="checkbox" id="snap-eq-png" />
+                  <span>SnapshotAs(m, "equilibrio.png")</span>
+                </label>
+                <label class="chk-inline">
+                  <input type="checkbox" id="table-eq-save" />
+                  <span>TableSave()</span>
+                </label>
+              </div>
+
+              <hr class="sep" />
+              <div class="section-subtitle" data-i18n="sec_stage2">Etapa 2 — Excitação / Evolução Temporal</div>
+
+              <div class="form-row" data-help="stage2">
+                <label data-i18n="lbl_dyn_mode">Modo da Etapa 2:</label>
+                <select id="dyn-mode">
+                  <option value="none" data-i18n="dyn_none">Nenhuma (encerrar após Etapa 1)</option>
+                  <option value="field_run" data-i18n="dyn_field">Campo constante B_ext + run(t)</option>
+                  <option value="pulse_run" data-i18n="dyn_pulse">Pulso de campo (liga → desliga)</option>
+                  <option value="hysteresis" data-i18n="dyn_hyst">Varredura de campo / Histerese (for)</option>
+                  <option value="sinc_fmr" class="adv-opt" data-i18n="dyn_sinc">Pulso Sinc — Espectroscopia FMR</option>
+                  <option value="stt_zl" class="adv-opt" data-i18n="dyn_stt">Corrente Spin-Transfer (Zhang-Li)</option>
+                </select>
+              </div>
+
+              <!-- Subpainel: Campo Constante + run -->
+              <div class="dyn-subpanel hidden" id="sub-field_run">
+                <div class="form-row" data-help="bext">
+                  <label data-i18n="lbl_bext_vec">Campo B<sub>ext</sub> (Bx, By, Bz em mT):</label>
+                  <div class="triple-input">
+                    <input type="number" id="dyn-bx" step="0.5" value="-24.6" />
+                    <input type="number" id="dyn-by" step="0.5" value="4.3" />
+                    <input type="number" id="dyn-bz" step="0.5" value="0" />
+                  </div>
+                </div>
+                <div class="form-row" data-help="operations">
+                  <label data-i18n="lbl_run_ns">Tempo de integração run(t) (ns):</label>
+                  <input type="number" id="dyn-run-ns" min="0.001" step="0.5" value="1" />
+                </div>
+              </div>
+
+              <!-- Subpainel: Pulso de Campo (liga -> desliga) -->
+              <div class="dyn-subpanel hidden" id="sub-pulse_run">
+                <div class="form-row" data-help="bext">
+                  <label data-i18n="lbl_pulse_b">Campo do pulso (Bx, By, Bz em mT):</label>
+                  <div class="triple-input">
+                    <input type="number" id="pls-bx" step="1" value="15" />
+                    <input type="number" id="pls-by" step="1" value="0" />
+                    <input type="number" id="pls-bz" step="1" value="0" />
+                  </div>
+                </div>
+                <div class="form-row" data-help="operations">
+                  <label data-i18n="lbl_pulse_t">Duração ligado / livre (ns):</label>
+                  <div class="double-input">
+                    <input type="number" id="pls-ton" min="0.001" step="0.5" value="2" title="Tempo com campo ligado (ns)" />
+                    <input type="number" id="pls-toff" min="0" step="0.5" value="3" title="Tempo livre após desligar (ns)" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Subpainel: Histerese -->
+              <div class="dyn-subpanel hidden" id="sub-hysteresis">
+                <div class="form-row" data-help="hysteresis">
+                  <label data-i18n="lbl_hyst_range">B<sub>max</sub> / passo ΔB (mT):</label>
+                  <div class="double-input">
+                    <input type="number" id="hyst-bmax" min="1" step="10" value="100" />
+                    <input type="number" id="hyst-bstep" min="0.5" step="1" value="5" />
+                  </div>
+                </div>
+                <div class="form-row" data-help="hysteresis">
+                  <label data-i18n="lbl_hyst_axis">Eixo do campo / desalinhamento (°):</label>
+                  <div class="double-input">
+                    <select id="hyst-axis">
+                      <option value="x">Eixo X</option>
+                      <option value="y">Eixo Y</option>
+                      <option value="z">Eixo Z</option>
+                    </select>
+                    <input type="number" id="hyst-tilt" min="0" max="45" step="0.5" value="1" title="Pequeno ângulo para quebra de simetria (°)" />
+                  </div>
+                </div>
+                <div class="form-row" data-help="hysteresis">
+                  <label data-i18n="lbl_hyst_opts">Ciclo e minimizador:</label>
+                  <div class="double-input">
+                    <select id="hyst-cycle">
+                      <option value="full" data-i18n="hyst_full">Ciclo completo (+B → −B → +B)</option>
+                      <option value="half" data-i18n="hyst_half">Meio ciclo (+B → −B)</option>
+                    </select>
+                    <select id="hyst-solver">
+                      <option value="minimize">minimize()</option>
+                      <option value="relax">relax()</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Subpainel: Pulso Sinc (FMR) -->
+              <div class="dyn-subpanel hidden" id="sub-sinc_fmr">
+                <div class="form-row" data-help="sinc_fmr">
+                  <label data-i18n="lbl_sinc_b0">Amplitude B₀ (mT) / Eixo:</label>
+                  <div class="double-input">
+                    <input type="number" id="sinc-b0" step="0.5" value="5" />
+                    <select id="sinc-axis">
+                      <option value="x">Eixo X</option>
+                      <option value="y">Eixo Y</option>
+                      <option value="z" selected>Eixo Z</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-row" data-help="sinc_fmr">
+                  <label data-i18n="lbl_sinc_f">Freq. corte f<sub>c</sub> (GHz) / t₀ (ns) / total (ns):</label>
+                  <div class="triple-input">
+                    <input type="number" id="sinc-fc" min="1" step="5" value="25" />
+                    <input type="number" id="sinc-t0" min="0.05" step="0.1" value="0.5" />
+                    <input type="number" id="sinc-tot" min="0.5" step="1" value="5" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Subpainel: Corrente Zhang-Li STT -->
+              <div class="dyn-subpanel hidden" id="sub-stt_zl">
+                <div class="form-row" data-help="stt">
+                  <label data-i18n="lbl_stt_j">Densidade J<sub>x</sub>, J<sub>y</sub> (×10¹¹ A/m²):</label>
+                  <div class="double-input">
+                    <input type="number" id="stt-jx" step="0.5" value="5" />
+                    <input type="number" id="stt-jy" step="0.5" value="0" />
+                  </div>
+                </div>
+                <div class="form-row" data-help="stt">
+                  <label>Pol / ξ (Xi) / run (ns):</label>
+                  <div class="triple-input">
+                    <input type="number" id="stt-pol" min="0" max="1" step="0.05" value="0.56" />
+                    <input type="number" id="stt-xi" min="0" max="2" step="0.05" value="0.1" />
+                    <input type="number" id="stt-ns" min="0.01" step="0.5" value="5" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- AutoSave / TableAutoSave da Etapa 2 -->
+              <div id="row-autosaves" class="hidden">
+                <hr class="sep" />
+                <div class="form-row" data-help="outputs">
+                  <label data-i18n="lbl_autosave">Autosave(m, dt) (ps) [0 = off]:</label>
+                  <input type="number" id="autosave-ps" min="0" step="10" value="200" />
+                </div>
+                <div class="form-row" data-help="outputs">
+                  <label data-i18n="lbl_tableauto">TableAutoSave(dt) (ps) [0 = off]:</label>
+                  <input type="number" id="tableauto-ps" min="0" step="1" value="10" />
+                </div>
+              </div>
+            </div>
+
+            <!-- PASSO 5: ESCRITA E SOLVER -->
+            <div class="step-panel" data-panel="5">
+              <div class="section-subtitle" data-i18n="sec_table">Colunas Extras na Tabela (TableAdd)</div>
+              <div class="checkbox-grid" data-help="outputs">
+                <label class="chk-inline"><input type="checkbox" id="tadd-etotal" checked /><span>E_total</span></label>
+                <label class="chk-inline"><input type="checkbox" id="tadd-bext" checked /><span>B_ext</span></label>
+                <label class="chk-inline"><input type="checkbox" id="tadd-eexch" /><span>E_exch</span></label>
+                <label class="chk-inline"><input type="checkbox" id="tadd-edemag" /><span>E_demag</span></label>
+                <label class="chk-inline"><input type="checkbox" id="tadd-eanis" /><span>E_anis</span></label>
+                <label class="chk-inline"><input type="checkbox" id="tadd-ezeeman" /><span>E_Zeeman</span></label>
+                <label class="chk-inline adv-only"><input type="checkbox" id="tadd-topo" /><span>ext_topologicalcharge</span></label>
+                <label class="chk-inline adv-only"><input type="checkbox" id="tadd-dt" /><span>dt</span></label>
+              </div>
+
+              <hr class="sep" />
+              <div class="section-subtitle" data-i18n="sec_format">Formato de Saída e Comentários</div>
+
+              <div class="form-row" data-help="outputs">
+                <label data-i18n="lbl_outfmt">Formato .ovf (OutputFormat):</label>
+                <select id="out-format">
+                  <option value="default" data-i18n="fmt_default">Padrão MuMax3 (OVF2_BINARY)</option>
+                  <option value="OVF2_TEXT">OVF2_TEXT (legível em texto)</option>
+                  <option value="OVF1_TEXT">OVF1_TEXT (legado)</option>
+                </select>
+              </div>
+
+              <div class="form-row" data-help="outputs">
+                <label data-i18n="lbl_comments">Comentários didáticos no .mx3:</label>
+                <label class="chk-inline">
+                  <input type="checkbox" id="include-comments" checked />
+                  <span data-i18n="chk_comments">Incluir cabeçalho e comentários explicativos</span>
+                </label>
+              </div>
+
+              <div class="adv-only">
+                <hr class="sep" />
+                <div class="section-subtitle" data-i18n="sec_solver">Integrador Numérico (LLG Solver)</div>
+
+                <div class="form-row" data-help="solver">
+                  <label data-i18n="lbl_solver">SetSolver(id):</label>
+                  <select id="solver-id">
+                    <option value="default">Padrão — 5 (Dormand-Prince RK45)</option>
+                    <option value="6">6 — Fehlberg (RK56)</option>
+                    <option value="4">4 — Runge-Kutta 4 (RK4)</option>
+                    <option value="3">3 — Bogacki-Shampine (RK23)</option>
+                    <option value="2">2 — Heun (bom p/ Temp &gt; 0)</option>
+                    <option value="1">1 — Euler</option>
+                    <option value="-1">-1 — Backward Euler</option>
+                  </select>
+                </div>
+
+                <div class="form-row" data-help="solver">
+                  <label data-i18n="lbl_dt">FixDt (fs) / MaxErr [0 = padrão]:</label>
+                  <div class="double-input">
+                    <input type="number" id="fix-dt" min="0" step="10" value="0" placeholder="FixDt (fs)" />
+                    <input type="number" id="max-err" min="0" step="1e-6" value="0" placeholder="MaxErr (ex: 1e-5)" />
+                  </div>
+                </div>
+
+                <hr class="sep" />
+                <div class="section-subtitle" data-i18n="sec_extra">Código .mx3 Personalizado (Opcional)</div>
+                <div class="form-row-col" data-help="extra_code">
+                  <textarea id="extra-code" rows="3" placeholder="// Linhas extras em .mx3 inseridas ao final do script..."></textarea>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- SUB-COLUNA 2: GUIA DIDÁTICO EM TEMPO REAL -->
+          <aside class="didactic-pane">
+            <div class="didactic-header">
+              <span>📘</span>
+              <h3 id="didactic-heading" data-i18n="didactic_title">Guia Didático do MuMax3</h3>
+            </div>
+            <div id="didactic-body" class="didactic-body"></div>
+          </aside>
+        </div>
+      </div>
+
+      <!-- QUADRANTE 4: PREVIEW DO ARQUIVO .mx3 GERADO (Estilo Dark Consolas do app_orca0) -->
+      <div class="card card-preview">
+        <div class="card-header">
+          <div class="preview-title-group">
+            <h2 data-i18n="q4_title">4. Visualização do Arquivo .mx3 Gerado</h2>
+            <label class="chk-inline chk-small">
+              <input type="checkbox" id="chk-manual-edit" />
+              <span data-i18n="chk_manual">Editar manualmente</span>
+            </label>
+          </div>
+          <div class="filename-box">
+            <label for="script-filename" data-i18n="lbl_filename">Arquivo:</label>
+            <input type="text" id="script-filename" value="simulacao.mx3" />
+          </div>
+        </div>
+
+        <div class="code-container">
+          <pre id="code-highlight" class="code-view" aria-live="polite"></pre>
+          <textarea id="code-editor" class="code-editor hidden" spellcheck="false"></textarea>
+        </div>
+
+        <div class="cli-bar">
+          <span class="cli-label" data-i18n="lbl_cli">Terminal:</span>
+          <code id="cli-cmd">mumax3 -vet simulacao.mx3 &amp;&amp; mumax3 -f simulacao.mx3</code>
+          <button id="btn-copy-cli" class="btn-mini" type="button" data-i18n="btn_copy_cli">Copiar comando</button>
+        </div>
+
+        <div class="preview-actions">
+          <div class="actions-group">
+            <button id="btn-copy-mx3" class="btn btn-secondary" type="button">
+              📋 <span data-i18n="btn_copy">Copiar .mx3</span>
+            </button>
+            <button id="btn-download-mx3" class="btn btn-secondary" type="button">
+              💾 <span data-i18n="btn_download">Baixar .mx3</span>
+            </button>
+          </div>
+          <span id="toast-msg" class="toast"></span>
+          <div class="actions-group">
+            <button id="btn-open-console" class="btn btn-secondary" type="button" title="Abrir console de execução">
+              📺 <span data-i18n="btn_console">Console</span>
+            </button>
+            <button id="btn-vet-mx3" class="btn btn-secondary" type="button" title="Validar sintaxe com mumax3 -vet">
+              ✅ <span data-i18n="btn_vet">Validar (-vet)</span>
+            </button>
+            <button id="btn-run-mx3" class="btn btn-accent" type="button" title="Salvar e executar no MuMax3 (GPU)">
+              🚀 <span data-i18n="btn_run">Executar MuMax3</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ABA 2: VISUALIZAÇÃO ELUCIDATIVA DE RESULTADOS (.ovf & table.txt) -->
+  <main id="tab-viewer" class="viewer-workspace hidden">
+    <!-- Barra lateral esquerda: seleção de resultados e ajustes visuais -->
+    <aside class="viewer-sidebar card">
+      <div class="card-header">
+        <h2 data-i18n="v_sidebar_title">Resultados &amp; Opções Visuais</h2>
+        <button id="v-btn-refresh" class="btn btn-secondary btn-xs" type="button" title="Atualizar pastas .out">🔄</button>
+      </div>
+
+      <div class="viewer-controls-scroll">
+        <div class="section-subtitle" data-i18n="v_sec_source">Fonte dos Dados (.out / Local)</div>
+
+        <div class="v-field">
+          <label for="v-folder-select" data-i18n="v_lbl_folder">Pasta de resultados (.out):</label>
+          <select id="v-folder-select"></select>
+        </div>
+
+        <div class="v-field">
+          <label for="v-ovf-select" data-i18n="v_lbl_ovf">Arquivo .ovf atual:</label>
+          <select id="v-ovf-select"></select>
+        </div>
+
+        <div class="v-field">
+          <button id="v-btn-local-files" class="btn btn-secondary btn-block" type="button">
+            📂 <span data-i18n="v_btn_local">Abrir .ovf ou table.txt do PC</span>
+          </button>
+          <input id="v-local-file-input" type="file" accept=".ovf,.txt" multiple hidden />
+        </div>
+
+        <hr class="sep" />
+        <div class="section-subtitle" data-i18n="v_sec_style">Mapa de Cores &amp; Vetores</div>
+
+        <div class="v-field">
+          <label for="v-colormap" data-i18n="v_lbl_cmap">Representação de cor:</label>
+          <select id="v-colormap">
+            <option value="hsl" data-i18n="cm_hsl">HSL Vetorial (Plano xy + mz)</option>
+            <option value="mz" data-i18n="cm_mz">Componente mz (Azul −1 / Vermelho +1)</option>
+            <option value="mx" data-i18n="cm_mx">Componente mx (Horizontal)</option>
+            <option value="my" data-i18n="cm_my">Componente my (Vertical)</option>
+            <option value="angle" data-i18n="cm_angle">Ângulo no plano φ (Quiralidade)</option>
+            <option value="grad" data-i18n="cm_grad">Textura / Gradiente |∇m| (Paredes e Núcleos)</option>
+          </select>
+        </div>
+
+        <div class="v-field hidden" id="v-zslice-wrap">
+          <label for="v-zslice" data-i18n="v_lbl_zslice">Camada Z (amostra 3D):</label>
+          <input type="number" id="v-zslice" min="0" max="0" step="1" value="0" />
+        </div>
+
+        <div class="v-checks">
+          <label class="chk-inline">
+            <input type="checkbox" id="v-show-vectors" checked />
+            <span data-i18n="v_chk_vec">Vetores com halo + símbolos ⊙ / ⊗</span>
+          </label>
+          <label class="chk-inline">
+            <input type="checkbox" id="v-show-contours" />
+            <span data-i18n="v_chk_contour">Destacar bordas de núcleo (|mz| = 0.5)</span>
+          </label>
+          <label class="chk-inline">
+            <input type="checkbox" id="v-show-axes" checked />
+            <span data-i18n="v_chk_axes">Eixos físicos (nm) + barra de escala</span>
+          </label>
+          <label class="chk-inline">
+            <input type="checkbox" id="v-show-legend" checked />
+            <span data-i18n="v_chk_legend">Roda de cores / Colorbar embutida</span>
+          </label>
+          <label class="chk-inline">
+            <input type="checkbox" id="v-show-summary" checked />
+            <span data-i18n="v_chk_summary">Rodapé com ⟨m⟩ e carga topológica Q</span>
+          </label>
+          <label class="chk-inline">
+            <input type="checkbox" id="v-smooth-pixels" />
+            <span data-i18n="v_chk_smooth">Suavizar pixels (interpolação)</span>
+          </label>
+        </div>
+
+        <div class="v-slider-row">
+          <label for="v-arrow-density" data-i18n="v_lbl_dens">Densidade de setas:</label>
+          <input type="range" id="v-arrow-density" min="8" max="32" step="1" value="18" />
+        </div>
+
+        <div class="v-slider-row">
+          <label for="v-arrow-scale" data-i18n="v_lbl_scale">Tamanho das setas:</label>
+          <input type="range" id="v-arrow-scale" min="0.5" max="1.6" step="0.1" value="1.0" />
+        </div>
+
+        <hr class="sep" />
+        <div class="section-subtitle" data-i18n="v_sec_cmp">Comparação Lado a Lado</div>
+
+        <label class="chk-inline">
+          <input type="checkbox" id="v-chk-compare" />
+          <span data-i18n="v_chk_cmp">Comparar 2 estados (.ovf)</span>
+        </label>
+
+        <div id="v-compare-controls" class="compare-box hidden">
+          <div class="v-field">
+            <label for="v-cmp-folder" data-i18n="v_lbl_cmp_dir">Pasta B (.out):</label>
+            <select id="v-cmp-folder"></select>
+          </div>
+          <div class="v-field">
+            <label for="v-cmp-file" data-i18n="v_lbl_cmp_file">Arquivo B (.ovf):</label>
+            <select id="v-cmp-file"></select>
+          </div>
+          <button id="v-btn-local-b" class="btn btn-secondary btn-block btn-xs" type="button">
+            📂 <span data-i18n="v_btn_local_b">Abrir Arquivo B (.ovf) do PC</span>
+          </button>
+          <input id="v-local-b-input" type="file" accept=".ovf" hidden />
+        </div>
+      </div>
+    </aside>
+
+    <!-- Área principal direita: Canvas HD do campo + Player + Gráfico table.txt -->
+    <section class="viewer-main">
+      <!-- Card 1: Campo vetorial elucidativo -->
+      <div class="card viewer-field-card">
+        <div class="card-header">
+          <div class="viewer-player-bar">
+            <button id="v-btn-prev" class="btn btn-secondary btn-xs" type="button" title="Frame anterior">⏮</button>
+            <button id="v-btn-play" class="btn btn-secondary btn-xs" type="button">▶ Play</button>
+            <button id="v-btn-next" class="btn btn-secondary btn-xs" type="button" title="Próximo frame">⏭</button>
+            <input type="range" id="v-frame-slider" min="0" max="0" value="0" class="frame-slider" />
+            <select id="v-fps" class="fps-select" title="Velocidade da animação">
+              <option value="4">4 fps</option>
+              <option value="8" selected>8 fps</option>
+              <option value="15">15 fps</option>
+              <option value="24">24 fps</option>
+            </select>
+            <span id="v-frame-info" class="frame-info">—</span>
+          </div>
+          <button id="v-btn-export-png" class="btn btn-accent btn-xs" type="button">
+            📷 <span data-i18n="v_btn_export">Exportar PNG Didático (HD)</span>
+          </button>
+        </div>
+
+        <div class="viewer-canvas-wrap">
+          <canvas id="viewer-canvas"></canvas>
+        </div>
+
+        <div id="v-probe-bar" class="probe-bar" data-i18n="v_probe_idle">
+          Passe o mouse sobre a amostra para inspecionar (x, y) em nm e o vetor m(r).
+        </div>
+      </div>
+
+      <!-- Card 2: Gráficos interativos de table.txt -->
+      <div class="card viewer-table-card">
+        <div class="card-header">
+          <div class="actions-group">
+            <h2 data-i18n="v_table_title">Gráficos de table.txt</h2>
+            <select id="v-chart-type" class="chart-select">
+              <option value="m_time" data-i18n="ch_mtime">Evolução temporal: ⟨mx⟩, ⟨my⟩, ⟨mz⟩ vs. t</option>
+              <option value="hysteresis" data-i18n="ch_hyst">Curva de Histerese: ⟨m⟩ vs. B_ext</option>
+              <option value="orbit" data-i18n="ch_orbit">Órbita no plano: ⟨my⟩ vs. ⟨mx⟩</option>
+              <option value="energy" data-i18n="ch_energy">Energias: E_total / termos vs. t</option>
+              <option value="fft" data-i18n="ch_fft">Espectro de Frequências — FFT (GHz)</option>
+            </select>
+          </div>
+          <button id="v-btn-export-chart" class="btn btn-secondary btn-xs" type="button">
+            📷 <span data-i18n="v_btn_export_ch">Exportar Gráfico PNG</span>
+          </button>
+        </div>
+        <div class="table-canvas-wrap">
+          <canvas id="table-canvas"></canvas>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL: CONFIGURAR MUMAX3 -->
+  <div id="modal-config" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🔧 <span data-i18n="cfg_title">Configurações do MuMax3 Local</span></h3>
+        <button class="modal-close" id="btn-close-config" type="button">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="cfg-offline-banner" class="callout-warn hidden" data-i18n="cfg_offline_msg">
+          ⚠️ <strong>Modo estático detectado:</strong> para executar o <code>mumax3.exe</code> direto pelo navegador, abra o app clicando em <code>Abrir_MUMAX0.bat</code>.
+        </div>
+
+        <div class="modal-field">
+          <label for="cfg-mumax-path" data-i18n="cfg_exe">Caminho do executável (mumax3.exe):</label>
+          <input type="text" id="cfg-mumax-path" placeholder="C:\...\bin\mumax3.exe" />
+          <small id="cfg-exe-status" class="field-hint"></small>
+        </div>
+
+        <div class="modal-field">
+          <label for="cfg-work-dir" data-i18n="cfg_workdir">Pasta onde salvar e executar os .mx3:</label>
+          <input type="text" id="cfg-work-dir" placeholder="C:\...\simulacoes" />
+        </div>
+
+        <div class="modal-row-2">
+          <div class="modal-field">
+            <label for="cfg-gpu" data-i18n="cfg_gpu">Índice da GPU (-gpu):</label>
+            <input type="number" id="cfg-gpu" min="0" max="15" step="1" value="0" />
+          </div>
+          <div class="modal-field modal-checks">
+            <label class="chk-inline">
+              <input type="checkbox" id="cfg-force" checked />
+              <span data-i18n="cfg_force">Sobrescrever pasta .out (-f)</span>
+            </label>
+            <label class="chk-inline">
+              <input type="checkbox" id="cfg-http" />
+              <span data-i18n="cfg_http">Ativar interface web do MuMax3 (:35367)</span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-open-workdir" class="btn btn-secondary" type="button">📂 <span data-i18n="btn_open_folder">Abrir Pasta</span></button>
+        <div class="actions-group">
+          <button id="btn-cancel-config" class="btn btn-secondary" type="button" data-i18n="btn_close">Fechar</button>
+          <button id="btn-save-config" class="btn btn-accent" type="button">💾 <span data-i18n="btn_save">Salvar</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CONSOLE / MONITOR DE EXECUÇÃO -->
+  <div id="modal-console" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+    <div class="modal-card modal-wide">
+      <div class="modal-header">
+        <div class="console-title-group">
+          <h3>🚀 <span id="console-title" data-i18n="console_title">Monitor de Execução — MuMax3</span></h3>
+          <span id="console-status-pill" class="pill pill-muted">Inativo</span>
+          <span id="console-timer" class="console-timer"></span>
+        </div>
+        <button class="modal-close" id="btn-close-console" type="button">✕</button>
+      </div>
+      <div class="modal-body console-body">
+        <div id="console-meta" class="console-meta"></div>
+        <pre id="console-log" class="console-log"></pre>
+      </div>
+      <div class="modal-footer">
+        <div class="actions-group">
+          <button id="btn-stop-job" class="btn btn-danger" type="button" disabled>⏹ <span data-i18n="btn_stop">Cancelar Execução</span></button>
+          <button id="btn-open-outdir" class="btn btn-secondary" type="button">📂 <span data-i18n="btn_open_out">Abrir Pasta .out</span></button>
+          <button id="btn-view-results" class="btn btn-accent hidden" type="button">📊 <span data-i18n="btn_view_res">Visualizar Resultados</span></button>
+        </div>
+        <button id="btn-dismiss-console" class="btn btn-secondary" type="button" data-i18n="btn_close">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="didactics.js"></script>
+  <script src="viewer.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
